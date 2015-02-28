@@ -1,9 +1,9 @@
 
-std::string* CreateStringOnFail (const char* text, ...)
+std::string& CreateStringOnFail (const char* text, ...)
 {
     std::string* strPtr = new std::string;
     if ( !text )
-        return strPtr;
+        return *strPtr;
 
     char str [512]  = "";
 
@@ -16,10 +16,10 @@ std::string* CreateStringOnFail (const char* text, ...)
 
     *strPtr += str;
 
-    return strPtr;
+    return *strPtr;
 }
 
-#define _EXC_N(code, msg) { NAT_EXCEPTION (EXPN, CreateStringOnFail (msg), ERROR_code) }
+#define _EXC_N(code, msg) { NAT_EXCEPTION (EXPN, CreateStringOnFail (msg).c_str (), ERROR_##code) }
 #define _ ,
 
 #define BEGIN \
@@ -27,9 +27,9 @@ try { ok ();
 
 #define END(code)\
 ok (); } \
-DETAILED_CONSECUTIVE_CATCH ("Error occurred", ERROR_code, expn_) \
-DETAILED_CATCH             ("Error occurred", ERROR_BAD_ALLOC, std::bad_alloc, expn_) \
-DETAILED_UNKNOWN_CATCH     ("Error occurred", ERROR_UNKNOWN, expn_)
+DETAILED_CONSECUTIVE_CATCH ("Error occurred", ERROR_##code, EXPN) \
+DETAILED_CATCH             ("Error occurred", ERROR_BAD_ALLOC, std::bad_alloc, EXPN) \
+DETAILED_UNKNOWN_CATCH     ("Error occurred", ERROR_UNKNOWN, EXPN)
 
 #define DEFAULT_OK_BLOCK \
 NZA_t::ok (); \
@@ -64,6 +64,7 @@ public:
 
 class File_t : NZA_t
 {
+    DISABLE_CLASS_COPY (File_t)
     std::string filename_;
     FILE* file_;
     std::string mode_;
@@ -77,7 +78,7 @@ public:
     File_t (std::string filename, const char* mode)
     try :
         filename_ (filename),
-        file_     (fopen (filename_, mode)),
+        file_     (fopen (filename_.c_str (), mode)),
         mode_     (mode)
     {
         if (!file_)
@@ -85,8 +86,16 @@ public:
 
         if (CheckMode ())
             _EXC_N (FILE_MODE, "Invalid file open mode \"%s\"" _ mode_.c_str())
-    }
+//  }
     END (CTOR)
+
+    ~File_t ()
+    {
+        fclose (file_);
+        file_ = nullptr;
+        filename_.clear ();
+        mode_.clear ();
+    }
 
     bool CheckMode ()
     {
@@ -110,12 +119,133 @@ public:
 
     bool End ()
     {
+        BEGIN
         return feof (file_);
+        END (FILE_END)
+    }
+
+    FILE* operator * ()
+    {
+        return file_;
     }
 };
 
-struct CumulativeErrors_t
+struct ErrorInfo_t : NZA_t
 {
+    std::string source_;
+    std::string message_;
+    uint32_t line_;
+    uint32_t pos_;
+    uint8_t  mode_;
 
+    void ok ()
+    {
+        DEFAULT_OK_BLOCK
+    }
+
+    ErrorInfo_t (std::string src,
+                 std::string msg,
+                 uint32_t line,
+                 uint32_t pos,
+                 uint8_t mode)
+    try :
+        source_  (src),
+        message_ (msg),
+        line_    (line),
+        pos_     (pos),
+        mode_    (mode)
+    {
+        if (mode_ != EM_WARNING && mode_ != EM_ERROR)
+            _EXC_N (INVALID_ERROR_MODE, "Invalid error mode %d" _ mode_)
+//  }
+    END (CTOR)
+
+    ~ErrorInfo_t () {}
+
+    void WriteError (File_t& file)
+    {
+        BEGIN
+        if (mode_ == EM_WARNING) fprintf (*file, "Warning: ");
+        if (mode_ == EM_ERROR) fprintf (*file, "Error: ");
+        fprintf (*file, "%s on line %d\n", message_.c_str (), line_);
+        fprintf (*file, "%*c\n", pos_, 'v');
+        fprintf (*file, "%s\n\n", source_.c_str ());
+        END (WRITE_ERROR)
+    }
+};
+
+struct CumulativeErrors_t : NZA_t
+{
+    std::vector<ErrorInfo_t> errors;
+    bool ignorable;
+
+    void ok ()
+    {
+        DEFAULT_OK_BLOCK
+    }
+
+    CumulativeErrors_t ()
+    try :
+        errors    (),
+        ignorable (true)
+    {
+//  }
+    END (CTOR)
+
+    void AddError (std::string src,
+                   std::string msg,
+                   uint32_t line,
+                   uint32_t pos,
+                   uint8_t mode)
+    {
+        BEGIN
+        errors.push_back (ErrorInfo_t (src, msg, line, pos, mode));
+        if (mode == EM_ERROR)
+            ignorable = false;
+        END (ADD_ERROR)
+    }
+
+    bool Empty ()
+    {
+        BEGIN
+        return errors.empty ();
+        END (EMPTY_STL)
+    }
+
+    void DumpErrors (std::string filename, uint32_t parse_level, std::string sourceFilename)
+    {
+        BEGIN
+        File_t file (filename, "w");
+
+        time_t t = time(0);   // get time now
+        struct tm* now = localtime( & t );
+        fprintf (*file, "Build: %d.%d.%d %d:%d:%d\n",
+                        now->tm_mday, now->tm_mon, now->tm_year,
+                        now->tm_hour, now->tm_min,  now->tm_sec);
+
+        fprintf (*file, "Parsing file \"%s\"\nLevel %d\n\n", sourceFilename.c_str (), parse_level);
+
+        for (auto& err : errors)
+            err.WriteError (file);
+
+        END (DUMP_ERRORS)
+    }
+
+    void Clear ()
+    {
+        BEGIN
+        errors.clear ();
+        END (CLEAR)
+    }
+
+    bool Ignore ()
+    {
+        return ignorable;
+    }
+
+    uint32_t Size ()
+    {
+        return errors.size ();
+    }
 };
 

@@ -21,10 +21,12 @@ struct StringTable_t : NZA_t
 {
     std::vector<std::string> data;
 
-    StringTable_t () :
-        data (),
-        size ()
-    {}
+    StringTable_t ()
+    try :
+        data ()
+    {
+//  }
+    END (CTOR)
 
     void ok ()
     {
@@ -50,7 +52,7 @@ struct StringTable_t : NZA_t
         }
         else
             return found - data.begin ();
-        END (REGISTER_STRING, "Failed to register string")
+        END (REGISTER_STRING)
     }
 
     void Delete (uint32_t key)
@@ -59,9 +61,8 @@ struct StringTable_t : NZA_t
         if (key < data.size ())
         {
             data[key].clear ();
-            size--;
         }
-        END (DELETE_STRING, "Failed to delete string")
+        END (DELETE_STRING)
     }
 };
 
@@ -79,8 +80,11 @@ struct VirtualCodeRepresentation_t : NZA_t
     try :
         tokens_ (),
         strings_ ()
-    {}
+    {
+//  }
     END (CTOR)
+
+    ~VirtualCodeRepresentation_t () {}
 
     void AddPrimaryToken (std::string token)
     {

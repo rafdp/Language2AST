@@ -4,6 +4,9 @@
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 
 #include "Exception.h"
+
+exception_data* EXPN = nullptr;
+
 #include <assert.h>
 #include <iostream>
 #include <locale>
@@ -18,13 +21,13 @@ T __zero__ ()
 }
 #define ZERO(T) (__zero__<T> ())
 
-
+std::string& CreateStringOnFail (const char* text, ...);
 
 #include "Errors.h"
-#include "Node.cpp"
-#include "Tex.cpp"
-#include "Differentiate.cpp"
-#include "RecursiveDescentParser.cpp"
+#include "Support.cpp"
+#include "Token.cpp"
+#include "LolcodeParser.cpp"
+#include "Compiler.cpp"
 
 
 #endif // BUILD_H_INCLUDED

@@ -17,8 +17,18 @@ enum ERRORS
     E (366, READ_LINE),
     E (367, CTOR),
     E (368, DTOR),
-    E (369, NULL_CODE),
-    E (370, LOAD_FILE)
+    E (369, NULL_CODE_PTR),
+    E (370, LOAD_FILE),
+    E (371, INVALID_ERROR_MODE),
+    E (372, ADD_ERROR),
+    E (373, EMPTY_STL),
+    E (374, FILE_END),
+    E (375, WRITE_ERROR),
+    E (376, DUMP_ERRORS),
+    E (377, COMPILE),
+    E (378, NULL_CUMLATIVE_ERRORS_PTR),
+    E (379, CLEAR),
+    E (380, PROCESS)
 };
 
 #undef E
@@ -59,7 +69,16 @@ enum TOKEN_TYPES : uint32_t
     T (1, UNTYPED)
 };
 
-#undef
+#undef T
+
+#define E(num, name) EM_##name = num
+enum ERROR_MODES : uint32_t
+{
+    E (1, WARNING),
+    E (2, ERROR)
+};
+
+#undef E
 
 const uint32_t DEFAULT_STR_BUFFER_SIZE = 512;
 
