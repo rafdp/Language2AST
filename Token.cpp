@@ -2,18 +2,22 @@
 struct Token_t : NZA_t
 {
     uint32_t type;
-    uint32_t str;
+    int64_t data;
+    uint32_t line;
+    uint32_t shift;
 
-    template<typename T1, typename T2>
-    Token_t (T1 type_, T2 str_) :
-        type (static_cast<uint32_t> (type_)),
-        str  (static_cast<uint32_t> (str_))
+    Token_t () :
+        type  (),
+        data  (),
+        line  (),
+        shift ()
     {}
 
-    template<typename T>
-    Token_t (T str_) :
-        type (TOKEN_UNTYPED),
-        str  (static_cast<uint32_t> (str_))
+    Token_t (int64_t d, uint32_t l, uint32_t s) :
+        type  (TOKEN_UNTYPED),
+        data  (d),
+        line  (l),
+        shift (s)
     {}
 };
 
@@ -64,12 +68,25 @@ struct StringTable_t : NZA_t
         }
         END (DELETE_STRING)
     }
+
+    std::string GetString (uint32_t key)
+    {
+        BEGIN
+        if (key < data.size ())
+        {
+            return data[key];
+        }
+        else
+            return ""s;
+        END (GET_STRING)
+    }
 };
 
 struct VirtualCodeRepresentation_t : NZA_t
 {
     std::vector<Token_t> tokens_;
     StringTable_t strings_;
+    std::vector<std::string> program_;
 
     void ok()
     {
@@ -78,16 +95,27 @@ struct VirtualCodeRepresentation_t : NZA_t
 
     VirtualCodeRepresentation_t ()
     try :
-        tokens_ (),
-        strings_ ()
+        tokens_  (),
+        strings_ (),
+        program_ ()
     {
 //  }
     END (CTOR)
 
     ~VirtualCodeRepresentation_t () {}
 
-    void AddPrimaryToken (std::string token)
+    void AddPrimaryToken (std::string token, uint32_t line, uint32_t shift)
     {
-        tokens_.push_back (strings_.Register (token));
+        tokens_.push_back (Token_t (strings_.Register (token), line, shift));
+    }
+
+    void AddLine (std::string line)
+    {
+        program_.push_back (line);
+    }
+
+    std::string GetString (uint32_t key)
+    {
+        return strings_.GetString (key);
     }
 };

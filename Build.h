@@ -2,9 +2,10 @@
 #define BUILD_H_INCLUDED
 
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
+//#pragma GCC diagnostic ignored "-Wunused-value"
 
 #include "Exception.h"
-
+using namespace std::literals::string_literals;
 exception_data* EXPN = nullptr;
 
 #include <assert.h>
