@@ -86,6 +86,18 @@ struct StringTable_t : NZA_t
         data = that.data;
         return *this;
     }
+
+    int32_t Registered (std::string str)
+    {
+        auto found = std::find (data.begin (), data.end (), str);
+        if (found == data.end ()) return -1;
+        return found - data.begin ();
+    }
+
+    uint32_t size ()
+    {
+        return data.size ();
+    }
 };
 
 struct VirtualCodeRepresentation_t : NZA_t
@@ -93,7 +105,6 @@ struct VirtualCodeRepresentation_t : NZA_t
     std::vector<Token_t> tokens_;
     StringTable_t strings_;
     std::vector<std::string> program_;
-    StringTable_t vars_;
 
     void ok()
     {
@@ -104,8 +115,7 @@ struct VirtualCodeRepresentation_t : NZA_t
     try :
         tokens_  (),
         strings_ (),
-        program_ (),
-        vars_    ()
+        program_ ()
     {
 //  }
     END (CTOR)
@@ -127,8 +137,4 @@ struct VirtualCodeRepresentation_t : NZA_t
         return strings_.GetString (key);
     }
 
-    uint32_t AddVar (uint32_t key)
-    {
-        return vars_.Register (strings_.GetString (key));
-    }
 };

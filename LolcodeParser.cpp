@@ -14,6 +14,7 @@ class LolcodeParser_t : NZA_t
                    uint32_t shift,
                    uint32_t mode);
     void AddErrorUnexpectedToken (const Token_t& tok);
+    void AddErrorUndeclared (const Token_t& tok);
 public:
     LolcodeParser_t (VirtualCodeRepresentation_t* code,
                      CumulativeErrors_t* cerrs);
@@ -95,6 +96,16 @@ void LolcodeParser_t::AddErrorUnexpectedToken (const Token_t& tok)
     if (tok.type != TOKEN_NUM)
     {
         msg += " \""s + code_->GetString (tok.data) + "\""s;
+    }
+    AddError (tok.line, msg, tok.shift, EM_ERROR);
+}
+
+void LolcodeParser_t::AddErrorUndeclared (const Token_t& tok)
+{
+    std::string msg ("\""s);
+    if (tok.type != TOKEN_NUM)
+    {
+        msg += code_->GetString (tok.data) + "\" has not been declared"s;
     }
     AddError (tok.line, msg, tok.shift, EM_ERROR);
 }
@@ -233,6 +244,7 @@ void LolcodeParser_t::ParseTokens ()
         {
             if (oldToken != TOKEN_YR &&
                 oldToken != TOKEN_I &&
+                oldToken != TOKEN_IZ &&
                 oldToken != TOKEN_A &&
                 oldToken != TOKEN_OF &&
                 oldToken != TOKEN_AN &&
@@ -240,11 +252,7 @@ void LolcodeParser_t::ParseTokens ()
                 oldToken != TOKEN_VISIBLE &&
                 oldToken != TOKEN_SAEM &&
                 oldLine == currentToken.line)
-                AddError (currentToken.line,
-                          "Unexpected token \""s +
-                          currentStr + "\""s,
-                          currentToken.shift,
-                          EM_ERROR);
+                AddErrorUnexpectedToken (currentToken);
             oldToken = currentToken.type = TOKEN_VAR;
         }
         oldLine = currentToken.line;
@@ -255,7 +263,8 @@ void LolcodeParser_t::ParseTokens ()
 void LolcodeParser_t::ParseConstructs ()
 {
     BEGIN
-    StringTable_t vars;
+    StringTable_t table; // var, funcs, loops
+    std::vector<uint32_t> types;
 
     for (auto currentToken = code_->tokens_.begin ();
          currentToken < code_->tokens_.end ();
@@ -283,8 +292,6 @@ void LolcodeParser_t::ParseConstructs ()
 
 
 
-
-
         #define CHECK_END \
         if (currentToken == code_->tokens_.end () - 1) \
         { \
@@ -303,11 +310,11 @@ void LolcodeParser_t::ParseConstructs ()
         #define IF(tok) if (currentToken->type == TOKEN_##tok) \
         { CHECK_END switch ((currentToken + 1)->type) {
 
-        #define ENDIF DEFAULT_CASE } }
+        #define ENDIF DEFAULT_CASE } continue; }
 
         #define DEPRECATED(tok) IF(tok) ENDIF
 
-        #define MERGE(cur, tok) case TOKEN_##tok: DROP_NEXT currentToken->type = TOKEN_##cur##_##tok; break;
+        #define MERGE(cur, tok) case TOKEN_##tok: DROP_NEXT currentToken->type = TOKEN_##cur##_##tok; currentToken--; break;
 
         #define ARITHMETIC_CASES \
             case TOKEN_SUM: \
@@ -320,40 +327,76 @@ void LolcodeParser_t::ParseConstructs ()
             case TOKEN_NUM: \
                 break;
 
+        #define LOGIC_CASES \
+            case TOKEN_VAR: \
+            case TOKEN_WON: \
+            case TOKEN_EITHER: \
+            case TOKEN_BOTH: \
+            case TOKEN_NOT: \
+            case TOKEN_DIFFRINT: \
+            case TOKEN_NUM: \
+                break;
+
         #define MERGE_OF(tok) IF(tok) MERGE (tok, OF) ENDIF
+
+        #define CHECK_VAR \
+        if (table.Registered (code_->GetString ((currentToken + 1)->data)) == -1) \
+            AddErrorUndeclared (*(currentToken + 1));
+
+        #define REG_LOCAL_TABLE(type)\
+        case TOKEN_VAR: \
+        { \
+            currentToken++; \
+            currentToken->data = table.Register (code_->GetString (currentToken->data)); \
+            int32_t shift = table.size () - types.size (); \
+            if (shift > 0) \
+                types.insert (types.end (), shift, 0); \
+            types[currentToken->data] = TOKEN_##type; \
+            currentToken--; \
+            break; \
+        }
 
         #undef IN
 
 
-        IF (R)
-            case TOKEN_NUM:
-                break;
+        IF (I_HAS_A)
+            REG_LOCAL_TABLE (VAR)
         ENDIF
 
+        IF (HOW_IZ_I)
+            REG_LOCAL_TABLE (FUNC)
+        ENDIF
+
+        IF (IM_IN_YR)
+            REG_LOCAL_TABLE (LOOP)
+        ENDIF
+
+        if ((currentToken + 1)->type == TOKEN_VAR)
+        {
+            CHECK_VAR
+            else
+            {
+                currentToken++;
+                currentToken->data = table.Registered (code_->GetString (currentToken->data));
+                currentToken->type = types[currentToken->data];
+                currentToken--;
+            }
+        }
+
         IF (WILE)
-            case TOKEN_BOTH:
-            case TOKEN_BIGGR:
-            case TOKEN_SMALLR:
-            case TOKEN_EITHER:
-            case TOKEN_NOT:
-            case TOKEN_DIFFRINT:
-                break;
+            LOGIC_CASES
         ENDIF
 
         DEPRECATED (HAS)
 
         IF (R)
-            case TOKEN_VAR:
-            case TOKEN_NUM:
-                break;
+            ARITHMETIC_CASES
         ENDIF
 
         DEPRECATED (OF)
 
         IF (AN)
-            case TOKEN_VAR:
-            case TOKEN_NUM:
-                break;
+            ARITHMETIC_CASES
         ENDIF
 
         MERGE_OF (SUM)
@@ -364,23 +407,17 @@ void LolcodeParser_t::ParseConstructs ()
         MERGE_OF (SMALLR)
         MERGE_OF (WON)
         MERGE_OF (EITHER)
-        MERGE_OF (BOTH)
 
         DEPRECATED (A)
 
 
         IF (I)
             MERGE(I, HAS)
+            MERGE(I, IZ)
         ENDIF
 
         IF (NOT)
-            case TOKEN_BOTH:
-            case TOKEN_BIGGR:
-            case TOKEN_SMALLR:
-            case TOKEN_EITHER:
-            case TOKEN_NOT:
-            case TOKEN_DIFFRINT:
-                break;
+            LOGIC_CASES
         ENDIF
 
         IF (BOTH)
@@ -391,15 +428,11 @@ void LolcodeParser_t::ParseConstructs ()
         DEPRECATED (SAEM)
 
         IF (DIFFRINT)
-            case TOKEN_VAR:
-            case TOKEN_NUM:
-                break;
+            ARITHMETIC_CASES
         ENDIF
 
         IF (VISIBLE)
-            case TOKEN_VAR:
-            case TOKEN_NUM:
-                break;
+            ARITHMETIC_CASES
         ENDIF
 
         IF (GIMMEH)
@@ -443,12 +476,7 @@ void LolcodeParser_t::ParseConstructs ()
         ENDIF
 
         IF (TIL)
-            case TOKEN_WON:
-            case TOKEN_EITHER:
-            case TOKEN_BOTH:
-            case TOKEN_NOT:
-            case TOKEN_DIFFRINT:
-                break;
+            LOGIC_CASES
         ENDIF
 
         DEPRECATED (OUTTA)
@@ -472,9 +500,7 @@ void LolcodeParser_t::ParseConstructs ()
         ENDIF
 
         IF (BOTH_SAEM)
-            case TOKEN_VAR:
-            case TOKEN_NUM:
-                break;
+            ARITHMETIC_CASES
         ENDIF
 
         IF (I_HAS)
@@ -528,59 +554,28 @@ void LolcodeParser_t::ParseConstructs ()
         ENDIF
 
         IF (WON_OF)
-            case TOKEN_WON:
-            case TOKEN_EITHER:
-            case TOKEN_BOTH:
-            case TOKEN_NOT:
-            case TOKEN_DIFFRINT:
-            case TOKEN_VAR:
-            case TOKEN_NUM:
-                break;
+            LOGIC_CASES
         ENDIF
 
         IF (EITHER_OF)
-            case TOKEN_WON:
-            case TOKEN_EITHER:
-            case TOKEN_BOTH:
-            case TOKEN_NOT:
-            case TOKEN_DIFFRINT:
-            case TOKEN_VAR:
-            case TOKEN_NUM:
-                break;
+            LOGIC_CASES
         ENDIF
 
         IF (BOTH_OF)
-            case TOKEN_WON:
-            case TOKEN_EITHER:
-            case TOKEN_BOTH:
-            case TOKEN_NOT:
-            case TOKEN_DIFFRINT:
-            case TOKEN_VAR:
-            case TOKEN_NUM:
-                break;
+            LOGIC_CASES
         ENDIF
 
         IF (IF_YOU_SAY)
             MERGE (IF_YOU_SAY, SO)
         ENDIF
 
-        IF (I_HAS_A)
-            case TOKEN_VAR:
-                break;
-        ENDIF
-
-        IF (HOW_IZ_I)
-            case TOKEN_VAR:
-                break;
-        ENDIF
-
-        IF (IM_IN_YR)
-            case TOKEN_VAR:
-                break;
-        ENDIF
-
         IF (IM_OUTTA_YR)
-            case TOKEN_VAR:
+            case TOKEN_LOOP:
+                break;
+        ENDIF
+
+        IF (I_IZ)
+            case TOKEN_FUNC:
                 break;
         ENDIF
 
@@ -593,9 +588,14 @@ void LolcodeParser_t::ParseConstructs ()
         #undef MERGE
         #undef MERGE_OF
         #undef ARITHMETIC_CASES
+        #undef LOGIC_CASES
+        #undef CHECK_VAR
+        #undef REG_LOCAL_TABLE
         #define IN
 
     }
+    code_->strings_ = table;
+
     END (PARSE_CONSTRUCTS)
 }
 

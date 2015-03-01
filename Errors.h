@@ -120,6 +120,9 @@ enum NODE_DATA : uint64_t
 #define T(num, name) TOKEN_##name = num
 enum TOKEN_TYPES : uint32_t
 {
+
+    T (998,  FUNC),
+    T (999,  LOOP),
     T (1000, NUM),
     T (1001, VAR),
     T (1002, IF_YOU),
@@ -148,6 +151,7 @@ enum TOKEN_TYPES : uint32_t
     T (1025, IM_IN_YR),
     T (1026, IM_OUTTA_YR),
     T (1027, IF_YOU_SAY_SO),
+    T (1028, I_IZ),
     TOKEN_BLOCK
 };
 
