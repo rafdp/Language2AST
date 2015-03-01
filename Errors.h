@@ -30,7 +30,10 @@ enum ERRORS
     E (379, CLEAR),
     E (380, PROCESS),
     E (381, PARSE_LINE),
-    E (382, GET_STRING)
+    E (382, GET_STRING),
+    E (383, PARSE_TOKENS),
+    E (384, PARSE_CONSTRUCTS),
+    E (384, UNTYPED_ON_CONSTRUCTS)
 };
 
 #undef E
@@ -69,25 +72,25 @@ enum NODE_DATA : uint64_t
     T ( 1, UNTYPED), \
     T ( 2, HAI), \
     T ( 3, KTHXBYE), \
-    T ( 4, BTW), \
-    T ( 5, OBTW), \
-    T ( 6, SO), \
-    T ( 7, TLDR), \
-    T ( 8, SUM), \
-    T ( 9, OF), \
-    T (10, AN), \
+    T ( 4, ITZ), \
+    T ( 5, WILE), \
+    T ( 6, HAS), \
+    T ( 7, R), \
+    T ( 8, OF), \
+    T ( 9, AN), \
+    T (10, SUM), \
     T (11, DIFF), \
     T (12, PRODUKT), \
     T (13, QUOSHUNT), \
     T (14, BIGGR), \
     T (15, SMALLR), \
-    T (16, BOTH), \
+    T (16, WON), \
     T (17, EITHER), \
-    T (18, WON), \
-    T (19, NOT), \
-    T (20, ALL), \
+    T (18, A), \
+    T (19, I), \
+    T (20, NOT), \
     T (21, MKAY), \
-    T (22, ANY), \
+    T (22, BOTH), \
     T (23, SAEM), \
     T (24, DIFFRINT), \
     T (25, VISIBLE), \
@@ -103,26 +106,48 @@ enum NODE_DATA : uint64_t
     T (35, IN), \
     T (36, YR), \
     T (37, UPPIN), \
-    T (38, DERFIN), \
+    T (38, NERFIN), \
     T (39, TIL), \
     T (40, OUTTA), \
     T (41, HOW), \
     T (42, IZ), \
-    T (43, I), \
-    T (44, IF), \
-    T (45, YOU), \
-    T (46, SAY), \
-    T (47, HAS), \
-    T (48, A), \
-    T (49, R),\
-    T (50, WILE), \
-    T (51, THAN)
+    T (43, IF), \
+    T (44, YOU), \
+    T (45, SAY), \
+    T (46, SO)
 
 
 #define T(num, name) TOKEN_##name = num
 enum TOKEN_TYPES : uint32_t
 {
-    T (100, NUM),
+    T (1000, NUM),
+    T (1001, VAR),
+    T (1002, IF_YOU),
+    T (1003, BOTH_SAEM),
+    T (1004, I_HAS),
+    T (1005, HOW_IZ),
+    T (1006, O_RLY_QM),
+    T (1007, YA_RLY),
+    T (1008, NO_WAI),
+    T (1009, IM_IN),
+    T (1010, IM_OUTTA),
+    T (1011, UPPIN_YR),
+    T (1012, NERFIN_YR),
+    T (1013, SUM_OF),
+    T (1014, DIFF_OF),
+    T (1015, PRODUKT_OF),
+    T (1016, QUOSHUNT_OF),
+    T (1017, BIGGR_OF),
+    T (1018, SMALLR_OF),
+    T (1019, WON_OF),
+    T (1020, EITHER_OF),
+    T (1021, BOTH_OF),
+    T (1022, IF_YOU_SAY),
+    T (1023, I_HAS_A),
+    T (1024, HOW_IZ_I),
+    T (1025, IM_IN_YR),
+    T (1026, IM_OUTTA_YR),
+    T (1027, IF_YOU_SAY_SO),
     TOKEN_BLOCK
 };
 

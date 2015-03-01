@@ -84,7 +84,7 @@ public:
         if (!file_)
             _EXC_N (OPEN_FILE, "Failed to open file \"%s\"" _ filename_.c_str())
 
-        if (CheckMode ())
+        if (!CheckMode ())
             _EXC_N (FILE_MODE, "Invalid file open mode \"%s\"" _ mode_.c_str())
 //  }
     END (CTOR)
@@ -168,8 +168,8 @@ struct ErrorInfo_t : NZA_t
         if (mode_ == EM_WARNING) fprintf (*file, "Warning: ");
         if (mode_ == EM_ERROR) fprintf (*file, "Error: ");
         fprintf (*file, "%s on line %d\n", message_.c_str (), line_);
-        fprintf (*file, "%*c\n", pos_, 'v');
-        fprintf (*file, "%s\n\n", source_.c_str ());
+        fprintf (*file, "%*c\n", pos_ + 1, 'v');
+        fprintf (*file, "%s\n--------------------------------------------------\n", source_.c_str ());
         END (WRITE_ERROR)
     }
 };
@@ -220,10 +220,10 @@ struct CumulativeErrors_t : NZA_t
         time_t t = time(0);   // get time now
         struct tm* now = localtime( & t );
         fprintf (*file, "Build: %d.%d.%d %d:%d:%d\n",
-                        now->tm_mday, now->tm_mon, now->tm_year,
+                        now->tm_mday, now->tm_mon + 1, now->tm_year - 100,
                         now->tm_hour, now->tm_min,  now->tm_sec);
 
-        fprintf (*file, "Parsing file \"%s\"\nLevel %d\n\n", sourceFilename.c_str (), parse_level);
+        fprintf (*file, "Parsing file \"%s\"\nLevel %d\n--------------------------------------------------\n", sourceFilename.c_str (), parse_level);
 
         for (auto& err : errors)
             err.WriteError (file);

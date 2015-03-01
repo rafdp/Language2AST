@@ -8,16 +8,16 @@ struct Token_t : NZA_t
 
     Token_t () :
         type  (),
-        data  (),
+        data   (),
         line  (),
         shift ()
     {}
 
-    Token_t (int64_t d, uint32_t l, uint32_t s) :
+    Token_t (int64_t data_, uint32_t line_, uint32_t shift_) :
         type  (TOKEN_UNTYPED),
-        data  (d),
-        line  (l),
-        shift (s)
+        data  (data_),
+        line  (line_),
+        shift (shift_)
     {}
 };
 
@@ -80,6 +80,12 @@ struct StringTable_t : NZA_t
             return ""s;
         END (GET_STRING)
     }
+
+    StringTable_t& operator = (const StringTable_t& that)
+    {
+        data = that.data;
+        return *this;
+    }
 };
 
 struct VirtualCodeRepresentation_t : NZA_t
@@ -87,6 +93,7 @@ struct VirtualCodeRepresentation_t : NZA_t
     std::vector<Token_t> tokens_;
     StringTable_t strings_;
     std::vector<std::string> program_;
+    StringTable_t vars_;
 
     void ok()
     {
@@ -97,7 +104,8 @@ struct VirtualCodeRepresentation_t : NZA_t
     try :
         tokens_  (),
         strings_ (),
-        program_ ()
+        program_ (),
+        vars_    ()
     {
 //  }
     END (CTOR)
@@ -117,5 +125,10 @@ struct VirtualCodeRepresentation_t : NZA_t
     std::string GetString (uint32_t key)
     {
         return strings_.GetString (key);
+    }
+
+    uint32_t AddVar (uint32_t key)
+    {
+        return vars_.Register (strings_.GetString (key));
     }
 };
