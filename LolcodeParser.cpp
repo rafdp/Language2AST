@@ -264,7 +264,7 @@ void LolcodeParser_t::ParseConstructs ()
 {
     BEGIN
     StringTable_t table; // var, funcs, loops
-    std::vector<uint32_t> types;
+    uint8_t nVars = 0;
 
     for (auto currentToken = code_->tokens_.begin ();
          currentToken < code_->tokens_.end ();
@@ -347,11 +347,29 @@ void LolcodeParser_t::ParseConstructs ()
         case TOKEN_VAR: \
         { \
             currentToken++; \
-            currentToken->data = table.Register (code_->GetString (currentToken->data)); \
-            int32_t shift = table.size () - types.size (); \
-            if (shift > 0) \
-                types.insert (types.end (), shift, 0); \
-            types[currentToken->data] = TOKEN_##type; \
+            if (table.Registered (code_->GetString (currentToken->data)) == -1) \
+            { \
+                if (TOKEN_##type == TOKEN_VAR) \
+                { \
+                    if (nVars == 8) \
+                    { \
+                        AddError (currentToken->line, \
+                                  "Only 8 vars allowed", \
+                                  currentToken->shift, \
+                                  EM_ERROR); \
+                        currentToken--; \
+                        break; \
+                    } \
+                    else nVars++; \
+                } \
+                currentToken->data = table.Register (code_->GetString (currentToken->data)); \
+                code_->SetType (currentToken->data, TOKEN_##type); \
+            } \
+            else  \
+                AddError (currentToken->line, \
+                          "Token \""s + code_->GetString (currentToken->data) + "\" has already been registered",\
+                          currentToken->shift, \
+                          EM_ERROR); \
             currentToken--; \
             break; \
         }
@@ -377,8 +395,12 @@ void LolcodeParser_t::ParseConstructs ()
             else
             {
                 currentToken++;
-                currentToken->data = table.Registered (code_->GetString (currentToken->data));
-                currentToken->type = types[currentToken->data];
+                int32_t dataT = table.Registered (code_->GetString (currentToken->data));
+                if (dataT != -1)
+                {
+                    currentToken->data = table.Registered (code_->GetString (currentToken->data));
+                    currentToken->type = code_->GetType (currentToken->data);
+                }
                 currentToken--;
             }
         }

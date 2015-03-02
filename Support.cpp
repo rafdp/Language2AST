@@ -218,7 +218,7 @@ struct CumulativeErrors_t : NZA_t
         BEGIN
         File_t file (filename, "w");
 
-        time_t t = time(0);   // get time now
+        time_t t = time (nullptr);   // get time now
         struct tm* now = localtime( & t );
         fprintf (*file, "Build: %d.%d.%d %d:%d:%d\n",
                         now->tm_mday, now->tm_mon + 1, now->tm_year - 100,

@@ -105,6 +105,7 @@ struct VirtualCodeRepresentation_t : NZA_t
     std::vector<Token_t> tokens_;
     StringTable_t strings_;
     std::vector<std::string> program_;
+    std::vector<uint32_t> types_;
 
     void ok()
     {
@@ -115,7 +116,8 @@ struct VirtualCodeRepresentation_t : NZA_t
     try :
         tokens_  (),
         strings_ (),
-        program_ ()
+        program_ (),
+        types_   ()
     {
 //  }
     END (CTOR)
@@ -135,6 +137,19 @@ struct VirtualCodeRepresentation_t : NZA_t
     std::string GetString (uint32_t key)
     {
         return strings_.GetString (key);
+    }
+
+    void SetType (uint32_t key, uint32_t type)
+    {
+        if (key >= types_.size ())
+            types_.insert (types_.end(), key - types_.size () + 1, 0);
+        types_[key] = type;
+    }
+
+    uint32_t GetType (uint32_t key)
+    {
+        if (key >= types_.size ()) return 0;
+        return types_[key];
     }
 
 };

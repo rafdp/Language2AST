@@ -114,7 +114,8 @@ enum NODE_DATA : uint64_t
     T (43, IF), \
     T (44, YOU), \
     T (45, SAY), \
-    T (46, SO)
+    T (46, SO), \
+    T (47, OPENNG)
 
 
 #define T(num, name) TOKEN_##name = num
