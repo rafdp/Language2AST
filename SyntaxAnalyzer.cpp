@@ -21,10 +21,12 @@ public:
 
     void Process ();
 
+    void ArithmeticParser (Node_t<NodeContent_t>* currentNode,
+                           std::vector<Token_t>::iterator& currentSource);
+
     void RecursiveAnalyzer (Node_t<NodeContent_t>* currentNode,
                             std::vector<Token_t>::iterator& currentSource,
-                            Node_t<NodeContent_t>* currentFunction,
-                            bool prevVar = false);
+                            Node_t<NodeContent_t>* currentFunction);
 
     void AddError (const Token_t& tok,
                    std::string msg,
@@ -112,19 +114,119 @@ void LolcodeLexicalAnalyzer_t::Process ()
     END (PROCESS)
 }
 
+void LolcodeLexicalAnalyzer_t::ArithmeticParser (Node_t<NodeContent_t>* currentNode,
+                                                 std::vector<Token_t>::iterator& currentSource)
+{
+    BEGIN
+    #define CASE_END \
+        currentSource++; \
+        ArithmeticParser (currentNode->PushChild (), currentSource); \
+        if (currentNode->GetNChildren () != 2) AddError (*old, "Invalid amount ov arguments");
+    auto old = currentSource;
+    switch (currentSource->type)
+    {
+        case TOKEN_BOTH_SAEM:
+            currentNode->SetElem (NodeContent_t (NODE_OPERATOR, OP_BOOL_EQUAL));
+            CASE_END
+            break;
+        case TOKEN_DIFFRINT:
+            currentNode->SetElem (NodeContent_t (NODE_OPERATOR, OP_BOOL_NOT_EQUAL));
+            CASE_END
+            break;
+        case TOKEN_SUM_OF:
+            currentNode->SetElem (NodeContent_t (NODE_OPERATOR, OP_PLUS));
+            CASE_END
+            break;
+        case TOKEN_DIFF_OF:
+            currentNode->SetElem (NodeContent_t (NODE_OPERATOR, OP_MINUS));
+            CASE_END
+            break;
+        case TOKEN_PRODUKT_OF:
+            currentNode->SetElem (NodeContent_t (NODE_OPERATOR, OP_MULTIPLY));
+            CASE_END
+            break;
+        case TOKEN_QUOSHUNT_OF:
+            currentNode->SetElem (NodeContent_t (NODE_OPERATOR, OP_DIVIDE));
+            CASE_END
+            break;
+        case TOKEN_BIGGR_OF:
+            currentNode->SetElem (NodeContent_t (NODE_STD_FUNCTION, STD_FUNC_MAX));
+            CASE_END
+            break;
+        case TOKEN_SMALLR_OF:
+            currentNode->SetElem (NodeContent_t (NODE_STD_FUNCTION, STD_FUNC_MAX));
+            CASE_END
+            break;
+        case TOKEN_EITHER_OF:
+            currentNode->SetElem (NodeContent_t (NODE_OPERATOR, OP_BOOL_OR));
+            CASE_END
+            break;
+        case TOKEN_BOTH_OF:
+            currentNode->SetElem (NodeContent_t (NODE_OPERATOR, OP_BOOL_AND));
+            CASE_END
+            break;
+        case TOKEN_WON_OF:
+            currentNode->SetElem (NodeContent_t (NODE_OPERATOR, OP_BOOL_OR));
+            CASE_END
+            currentNode->InsertAndSlide (0, NodeContent_t (NODE_OPERATOR, OP_BOOL_AND));
+            currentNode[0].PushChildren (NodeContent_t (NODE_OPERATOR, OP_NOT));
+            currentNode[0][1].PushChildren ();
+
+            currentNode->InsertAndSlide (1, NodeContent_t (NODE_OPERATOR, OP_BOOL_AND));
+            currentNode[1].PushChildren (NodeContent_t (NODE_OPERATOR, OP_NOT));
+            currentNode[1][1].PushChildren ();
+
+            CopyTree (&currentNode[0][0], &currentNode[1][1][0]);
+            CopyTree (&currentNode[1][0], &currentNode[0][1][0]);
+
+            break;
+
+        case TOKEN_AN:
+            currentNode = currentNode->GetParent ();
+            currentSource++;
+            ArithmeticParser (currentNode->PushChild (), currentSource);
+            break;
+
+        case TOKEN_NOT:
+            currentNode->SetElem (NodeContent_t (NODE_OPERATOR, OP_NOT));
+            currentSource++;
+            ArithmeticParser (currentNode->PushChild (), currentSource);
+            break;
+
+        case TOKEN_VAR:
+        {
+            currentNode->SetElem (NodeContent_t (NODE_VARIABLE,
+                                                 relink_[currentSource->data]));
+            currentSource++;
+            ArithmeticParser (currentNode, currentSource);
+            break;
+        }
+
+        case TOKEN_NUM:
+        {
+            currentNode->SetElem (NodeContent_t (NODE_NUMBER, currentSource->data));
+            currentSource++;
+            ArithmeticParser (currentNode, currentSource);
+            break;
+        }
+
+            default: break;
+    }
+    END (ARITHMETIC_PARSER)
+}
+
 
 
 void LolcodeLexicalAnalyzer_t::RecursiveAnalyzer (Node_t<NodeContent_t>* currentNode,
                                                   std::vector<Token_t>::iterator& currentSource,
-                                                  Node_t<NodeContent_t>* currentFunction,
-                                                  bool prevVar)
+                                                  Node_t<NodeContent_t>* currentFunction)
 {
 
     BEGIN
     #define NOT_IN_A_FUNCTION \
     if (currentFunction == nullptr) \
     {\
-        AddError (*currentSource, "Not in a function"); \
+        AddError (*old, "Not in a function"); \
         break;\
     }
 
@@ -191,7 +293,7 @@ void LolcodeLexicalAnalyzer_t::RecursiveAnalyzer (Node_t<NodeContent_t>* current
                                    treeRoot_.GetLastChild ());
             }
             else
-                AddError (*currentSource, "Nested functions are deprecated");
+                AddError (*old, "Nested functions are deprecated");
             break;
         }
 
@@ -200,6 +302,7 @@ void LolcodeLexicalAnalyzer_t::RecursiveAnalyzer (Node_t<NodeContent_t>* current
             NOT_IN_A_FUNCTION
             currentNode.SetElem (NodeContent_t (STD_FUNC_CALL_USER,
                                                 relink_[(currentSource + 1)->data]);
+            currentSource += 2;
 
             NEXT_NODE
             break;
@@ -208,38 +311,35 @@ void LolcodeLexicalAnalyzer_t::RecursiveAnalyzer (Node_t<NodeContent_t>* current
         case TOKEN_VAR:
         {
             NOT_IN_A_FUNCTION
+            currentNode->SetElem (NodeContent_t (NODE_VARIABLE,
+                                                 relink_[currentSource->data]));
             currentSource++;
-            RecursiveAnalyzer (currentNode,
-                               currentSource,
-                               currentFunction,
-                               true);
+            NEXT_NODE
             break;
         }
 
         case TOKEN_R:
         {
             NOT_IN_A_FUNCTION
-            if (!prev_var)
+            Node_t<NodeContent_t>* bak = currentNode;
+            currentNode = currentNode->GetParent();
+            uint32_t size = currentNode->GetNChildren ();
+
+            if (currentNode->GetChild (size - 2)->GetElem ().flag != NODE_VARIABLE)
             {
-                AddError (*currentSource, "Invalid use of R");
+                AddError (*old, "Invalid use of R");
             }
             else
             {
-                currentNode->SetElem (NodeContent_t (NODE_OPERATOR,
-                                                     OP_EQUAL));
-                currentNode->PushChild (NodeContent_t (NODE_VARIABLE,
-                                                       relink_[(currentSource - 1)->data]));
-                currentSource++
-                RecursiveAnalyzer (currentNode.PushChild (),
-                                   currentSource,
-                                   currentFunction,
-                                   true);
-                NEXT_NODE
-
+                currentNode->InsertAndSlide (size - 2,
+                                             NodeContent_t (NODE_OPERATOR,
+                                                            OP_EQUAL));
+                currentSource++;
+                ArithmeticParser (currentNode->PushChild (), currentSource);
             }
+            currentNode = bak;
             break;
         }
-
 
         default: break;
     }

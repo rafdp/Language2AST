@@ -2,7 +2,7 @@
 
 struct NodeContent_t
 {
-    uint8_t flag;
+    uint16_t flag;
     double data;
 
     NodeContent_t (uint8_t flag_, double data_ = 0) :
@@ -174,6 +174,14 @@ public:
         END (GET_CHILD)
     }
 
+    uint32_t GetNChildren ()
+    {
+        BEGIN
+        return children_.size ();
+        END (GET_N_CHILDREN)
+    }
+
+
 
     Node_t* GetLastChild ()
     {
@@ -230,6 +238,20 @@ public:
         BEGIN
         elem_ = elem;
         END (SET_ELEM)
+    }
+
+    void InsertAndSlide (uint32_t pos, const Element_t& elem)
+    {
+        BEGIN
+        if (pos > children_.size ())
+            _EXC_N (OUT_OF_RANGE, "Trying to access out of range element")
+
+        Node_t<Element_t>* bak = children_[pos]->GetElem ();
+        children_[pos] = nullptr;
+        SetChild (pos, new Node_t (this, elem));
+        children_[pos]->PushChild ();
+        children_[pos]->SetChild (0, bak);
+        END (INSERT_AND_SLIDE)
     }
 
 
@@ -301,20 +323,23 @@ public:
         printf (")");
     }
 */
-/*
-    Node_t* UnlinkRightChild ()
-    BEGIN
-        Node_t* ret = rightChild_;
-        rightChild_ = nullptr;
-        return ret;
-    END (ERROR_UNLINK_RIGHT)
 
-    Node_t* UnlinkLeftChild ()
+    Node_t* UnlinkChild (uint32_t n)
     BEGIN
-        Node_t* ret = leftChild_;
-        leftChild_ = nullptr;
+        Node_t* ret = children_[n];
+        children_[n] = nullptr;
         return ret;
-    END (ERROR_UNLINK_LEFT)
-*/
+    END (UNLINK_CHILD)
+
 
 };
+
+void CopyTree (Node_t<NodeContent_t>* source, Node_t<NodeContent_t>* destination)
+{
+    destination->SetElem (source->GetElem ());
+    uint32_t size = source->GetNChildren ();
+    for (uint32_t i = 0; i < size; i++)
+    {
+        CopyTree (source->GetChild (i), destination->PushChild ());
+    }
+}

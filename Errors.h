@@ -47,6 +47,10 @@ enum ERRORS
     E (396, OP_SQUARE_BRACKETS),
     E (397, GET_LAST_CHILD),
     E (398, NO_LAST_CHILD),
+    E (399, GET_N_CHILDREN),
+    E (400, INSERT_AND_SLIDE),
+    E (401, ARITHMETIC_PARSER),
+    E (402, UNLINK_CHILD)
 };
 
 #undef E
@@ -186,6 +190,8 @@ enum TREE_STUFF
     STD_FUNC_CALL_USER     = 7,
     STD_FUNC_DIFFERENTIATE = 8,
     STD_FUNC_SQRT          = 9,
+    STD_FUNC_MAX           = 10,
+    STD_FUNC_MIN           = 11,
 
     OP_EQUAL            = 1,
     OP_PLUS             = 2,
