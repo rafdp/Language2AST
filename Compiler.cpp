@@ -7,6 +7,7 @@ class Compiler_t : NZA_t, NonCopiable_t
 
     VirtualCodeRepresentation_t code_;
     LolcodeParser_t parser_;
+    LolcodeLexicalAnalyzer_t analyzer_;
 
     int processingLevel_;
     //! add tree, syntax analysis ...
@@ -35,6 +36,7 @@ try :
     errorList_       (),
     code_            (),
     parser_          (&code_, &errorList_),
+    analyzer_        (&code_, &errorList_),
     processingLevel_ (0)
 {
 
@@ -58,6 +60,10 @@ bool Compiler_t::Compile ()
     if (! ManageErrors ()) return false;
 
     parser_.ParseConstructs ();
+
+    if (! ManageErrors ()) return false;
+
+    analyzer_.Process ();
 
     if (! ManageErrors ()) return false;
 

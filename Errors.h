@@ -33,7 +33,20 @@ enum ERRORS
     E (382, GET_STRING),
     E (383, PARSE_TOKENS),
     E (384, PARSE_CONSTRUCTS),
-    E (384, UNTYPED_ON_CONSTRUCTS)
+    E (385, UNTYPED_ON_CONSTRUCTS),
+    E (386, PUSH_CHILD),
+    E (387, SET_CHILD),
+    E (388, GET_CHILD),
+    E (389, LEAF),
+    E (390, GET_PARENT),
+    E (391, ROOT),
+    E (392, SET_ELEM),
+    E (393, GET_ELEM),
+    E (394, RECURSIVE_ANALYZER),
+    E (395, OUT_OF_RANGE),
+    E (396, OP_SQUARE_BRACKETS),
+    E (397, GET_LAST_CHILD),
+    E (398, NO_LAST_CHILD),
 };
 
 #undef E
@@ -50,23 +63,6 @@ enum NODE_CONTENT : uint8_t
 };
 
 #undef F
-
-enum NODE_DATA : uint64_t
-{
-     OP_PLUS   = '+',
-     OP_MINUS  = '-',
-     OP_MUL    = '*',
-     OP_DIV    = '/',
-     OP_POW    = '^',
-     CMD_SIN   = 256,
-     CMD_COS   = 257,
-     CMD_TAN   = 258,
-     CMD_CTG   = 259,
-     CMD_EXP   = 260,
-     CMD_LN    = 261,
-     CMD_ROOT  = 262,
-     CMD_UNMIN = 263
-};
 
 #define TOKEN_BLOCK \
     T ( 1, UNTYPED), \
@@ -168,6 +164,59 @@ enum ERROR_MODES : uint32_t
 #undef E
 
 const uint32_t DEFAULT_STR_BUFFER_SIZE = 512;
+
+enum TREE_STUFF
+{
+    NODE_ROOT          = 0,
+    NODE_USER_FUNCTION = 1,
+    NODE_NUMBER        = 2,
+    NODE_VARIABLE      = 3,
+    NODE_OPERATOR      = 4,
+    NODE_LOGIC         = 5,
+    NODE_MAIN          = 6,
+    NODE_STD_FUNCTION  = 7,
+    NODE_VAR_INIT      = 8,
+    NODE_SERVICE       = 9,
+
+    STD_FUNC_INPUT         = 1,
+    STD_FUNC_OUTPUT        = 2,
+    STD_FUNC_SIN           = 3,
+    STD_FUNC_COS           = 4,
+    STD_FUNC_GETCH         = 6,
+    STD_FUNC_CALL_USER     = 7,
+    STD_FUNC_DIFFERENTIATE = 8,
+    STD_FUNC_SQRT          = 9,
+
+    OP_EQUAL            = 1,
+    OP_PLUS             = 2,
+    OP_MINUS            = 3,
+    OP_MULTIPLY         = 4,
+    OP_DIVIDE           = 5,
+    OP_POWER            = 6,
+    OP_BOOL_EQUAL       = 7,
+    OP_BOOL_NOT_EQUAL   = 8,
+    OP_BOOL_LOWER       = 9,
+    OP_BOOL_GREATER     = 10,
+    OP_BOOL_NOT_LOWER   = 11,
+    OP_BOOL_NOT_GREATER = 12,
+    OP_BOOL_NOT         = 13,
+    OP_BOOL_OR          = 14,
+    OP_BOOL_AND         = 15,
+    OP_PLUS_EQUAL       = 16,
+    OP_MINUS_EQUAL      = 17,
+    OP_MULTIPLY_EQUAL   = 18,
+    OP_DIVIDE_EQUAL     = 19,
+
+    LOGIC_IF            = 1,
+    LOGIC_WHILE         = 2,
+    LOGIC_ELSE          = 3,
+    LOGIC_CONDITION     = 4,
+    LOGIC_CONDITION_MET = 5,
+
+    PERSONAL_CODE = 12
+
+};
+
 
 
 #endif // ERRORS_H_INCLUDED

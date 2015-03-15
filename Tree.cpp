@@ -5,7 +5,7 @@ struct NodeContent_t
     uint8_t flag;
     double data;
 
-    NodeContent_t (uint8_t flag_, double data_) :
+    NodeContent_t (uint8_t flag_, double data_ = 0) :
         flag (flag_),
         data (data_)
     {}
@@ -95,7 +95,7 @@ struct NodeContent_t
 
 
 template <class Element_t>
-class Node_t
+class Node_t : NZA_t
 {
 
     DISABLE_CLASS_COPY (Node_t)
@@ -106,13 +106,11 @@ class Node_t
 
     void ok ()
     {
-        if (this == nullptr)
-            NAT_EXCEPTION (expn_, "Null this", ERROR_NULL_THIS)
+        DEFAULT_OK_BLOCK
     }
 public:
 
-    Node_t (exception_data* expn,
-            const Element_t& elem = Element_t ())
+    Node_t (const Element_t& elem = Element_t ())
     try :
         children_   (),
         parent_     (),
@@ -130,13 +128,17 @@ public:
     END (CTOR)
 
     template <typename T = Element_t>
-    void PushChild (T elem = T())
+    Node_t<Element_t>* PushChild (T elem = T())
     {
         BEGIN
 
-        children_.push_back (new Node_t (expn_, this, elem));
+        Node_t<Element_t>* ptr = new Node_t (this, elem);
 
-        END (ERROR_PUSH_CHILD)
+        children_.push_back (ptr);
+
+        return ptr;
+
+        END (PUSH_CHILD)
     }
 
 
@@ -151,56 +153,96 @@ public:
         }
         children_[n] = child;
         if (child) children_[n]->parent_ = this;
-        END (ERROR_SET_CHILD)
+        END (SET_CHILD)
     }
 
 
     bool Leaf ()
-    BEGIN
+    {
+        BEGIN
         return (children_.empty ());
-    END (ERROR_LEAF)
+        END (LEAF)
+    }
+
 
     Node_t* GetChild (uint32_t n)
-    BEGIN
-        if (n > children_.size ()) return nullptr;
+    {
+        BEGIN
+        if (n > children_.size ())
+            _EXC_N (OUT_OF_RANGE, "Trying to access out of range element")
         return children_[n];
-    END (ERROR_GET_RC)
+        END (GET_CHILD)
+    }
+
+
+    Node_t* GetLastChild ()
+    {
+        BEGIN
+        if (children_.size () == 0)
+            _EXC_N (NO_LAST_CHILD, "No last child")
+        return *children_.rbegin ();
+        END (GET_LAST_CHILD)
+    }
+
+    Node_t& operator [] (uint32_t n)
+    {
+        BEGIN
+        return *GetChild (n);
+        END (OP_SQUARE_BRACKETS)
+    }
 
     Node_t* GetParent ()
-    BEGIN
+    {
+        BEGIN
         return parent_;
-    END (ERROR_GET_P)
+        END (GET_PARENT)
+    }
+
 
 
     bool Root ()
-    BEGIN
+    {
+        BEGIN
         return parent_ == nullptr;
-    END (ERROR_ROOT)
+        END (ROOT)
+    }
+
 
     ~Node_t ()
-    BEGIN
+    {
+        BEGIN
         Clear ();
         if (parent_)
         {
-            auto found = parent_->children_.find (this);
+            auto found = std::find (parent_->children_.begin(),
+                                    parent_->children_.end (),
+                                    this);
             if (found != parent_->children_.end ())
                 *found = nullptr;
         }
         return;
-    END (ERROR_DTOR)
+        END (DTOR)
+    }
+
 
     void SetElem (const Element_t& elem)
-    BEGIN
+    {
+        BEGIN
         elem_ = elem;
-    END (ERROR_CHANGE_ELEM)
+        END (SET_ELEM)
+    }
+
 
     Element_t& GetElem ()
-    BEGIN
+    {
+        BEGIN
         return elem_;
-    END (ERROR_GET_ELEM)
+        END (GET_ELEM)
+    }
 
     void Clear ()
-    BEGIN
+    {
+        BEGIN
         for (auto& i : children_)
         {
             if (i)
@@ -210,7 +252,9 @@ public:
             }
         }
         children_.clear ();
-    END (ERROR_CLEAR)
+        END (CLEAR)
+    }
+
 /*
     void DumpPrefix ()
     {

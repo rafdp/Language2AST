@@ -29,6 +29,7 @@ std::string& CreateStringOnFail (const char* text, ...);
 #include "Token.cpp"
 #include "LolcodeParser.cpp"
 #include "Tree.cpp"
+#include "SyntaxAnalyzer.cpp"
 #include "Compiler.cpp"
 
 

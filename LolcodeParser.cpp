@@ -409,6 +409,7 @@ void LolcodeParser_t::ParseConstructs ()
             LOGIC_CASES
         ENDIF
 
+
         DEPRECATED (HAS)
 
         IF (R)
@@ -460,6 +461,10 @@ void LolcodeParser_t::ParseConstructs ()
         IF (GIMMEH)
             case TOKEN_VAR:
                 break;
+        ENDIF
+
+        IF (ITZ)
+            ARITHMETIC_CASES
         ENDIF
 
         IF (O)
