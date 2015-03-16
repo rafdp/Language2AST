@@ -1,0 +1,21 @@
+HAI
+
+I HAS A var ITZ 10
+I HAS A factorial ITZ 1
+
+HOW IZ I gimme_that_factorial
+
+  IM IN YR loop NERFIN YR var WILE BOTH SAEM var AN BIGGR OF var AN 2
+    factorial R PRODUKT OF factorial AN var
+  IM OUTTA YR loop
+
+  VISIBLE factorial
+
+IF YOU SAY SO
+
+
+OPENNG
+
+I IZ gimme_that_factorial
+
+KTHXBYE
