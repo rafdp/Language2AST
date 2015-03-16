@@ -7,6 +7,7 @@ int main()
     {
         Compiler_t compiler ("code.txt", "ast.txt", "CodeErrors.txt");
         if (!compiler.Compile ()) return 0;
+        compiler.Save ();
 
         return 0;
     }

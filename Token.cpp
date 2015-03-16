@@ -83,7 +83,9 @@ struct StringTable_t : NZA_t
 
     StringTable_t& operator = (const StringTable_t& that)
     {
+        data.clear ();
         data = that.data;
+        for (auto i : data) printf ("__ %s\n", i.c_str ());
         return *this;
     }
 

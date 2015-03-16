@@ -269,6 +269,7 @@ void LolcodeParser_t::ParseConstructs ()
 {
     BEGIN
     StringTable_t table; // var, funcs, loops
+    //ServiceCopyOnDestroy_t (&table, &code_->strings_);
     uint8_t nVars = 0;
 
     bool foundStart = false;
@@ -292,6 +293,7 @@ void LolcodeParser_t::ParseConstructs ()
         if (currentToken->type == TOKEN_KTHXBYE)
         {
             code_->tokens_.erase (currentToken, code_->tokens_.end ());
+            code_->strings_ = table;
             return;
         }
 
@@ -654,7 +656,7 @@ void LolcodeParser_t::ParseConstructs ()
         #define IN
 
     }
-    code_->strings_ = table;
+
 
     END (PARSE_CONSTRUCTS)
 }

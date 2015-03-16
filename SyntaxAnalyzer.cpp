@@ -32,8 +32,7 @@ public:
                    std::string msg,
                    uint32_t mode = EM_ERROR);
 
-    void Dump () {treeRoot_.DumpPrefix ();}
-
+    void Dump (std::string filename);
 };
 
 void LolcodeLexicalAnalyzer_t::AddError (const Token_t& tok,
@@ -583,6 +582,33 @@ void LolcodeLexicalAnalyzer_t::RecursiveAnalyzer (Node_t<NodeContent_t>* current
 
     END (RECURSIVE_ANALYZER)
 }
+
+
+
+void LolcodeLexicalAnalyzer_t::Dump (std::string filename)
+{
+    BEGIN
+    File_t file (filename, "w");
+    fprintf (*file, "%d %d\n", BUILD_NUMBER, PERSONAL_CODE);
+
+    fprintf (*file, "FUNCS %d\n", funcs_.size () - 2);
+    for (auto i = funcs_.data.begin () + 1;
+         i < funcs_.data.end () - 1;
+         i++)
+        fprintf (*file, "%s\n", i->c_str ());
+
+    fprintf (*file, "VARS %d\n", vars_.size ());
+    for (auto i = vars_.data.begin ();
+         i < vars_.data.end ();
+         i++)
+        fprintf (*file, "%s\n", i->c_str ());
+
+    treeRoot_.DumpPrefix (file);
+    END (DUMP)
+}
+
+
+
 
 
     /**

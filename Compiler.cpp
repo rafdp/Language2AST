@@ -21,6 +21,8 @@ public:
     bool Compile ();
 
     bool ManageErrors ();
+
+    void Save ();
 };
 
 void Compiler_t::ok ()
@@ -67,10 +69,15 @@ bool Compiler_t::Compile ()
 
     if (! ManageErrors ()) return false;
 
-    analyzer_.Dump ();
-
     END (PROCESS)
     return true;
+}
+
+void Compiler_t::Save ()
+{
+    BEGIN
+    analyzer_.Dump (ast_);
+    END (SAVE)
 }
 
 bool Compiler_t::ManageErrors ()

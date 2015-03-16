@@ -15,9 +15,9 @@ struct NodeContent_t
         data (0)
     {}
 
-    void Print ()
+    void Print (File_t& f)
     {
-        switch (flag)
+        /*switch (flag)
         {
         case NODE_NUMBER:
             printf ("num");
@@ -61,7 +61,8 @@ struct NodeContent_t
             printf ("unk");
             break;
         }
-        printf (" %g", data);
+        printf (" %g", data);*/
+        fprintf (*f, "%d %g", flag, data - ((flag == NODE_USER_FUNCTION) ? 1 : 0));
     }
 /*
     double GetDouble ()
@@ -305,12 +306,15 @@ public:
     }
 
 
-    void DumpPrefix ()
+    void DumpPrefix (File_t& f, bool first = true)
     {
-        printf ("[ ");
-        elem_.Print();
-        for (auto& i : children_) {printf (" "); i->DumpPrefix (); }
-        printf (" ] ");
+        BEGIN
+        fprintf (*f, "[ ");
+        elem_.Print (f);
+        for (auto& i : children_) {fprintf (*f, " "); i->DumpPrefix (f, false); }
+        fprintf (*f, " NULL ]");
+        if (!first) fprintf (*f, " ");
+        END (DUMP)
     }
 /*
     void DumpInfix ()

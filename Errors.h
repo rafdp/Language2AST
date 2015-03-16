@@ -52,6 +52,8 @@ enum ERRORS
     E (401, ARITHMETIC_PARSER),
     E (402, UNLINK_CHILD),
     E (403, CLEAR_LAST_CHILD),
+    E (404, DUMP),
+    E (405, SAVE),
 
 };
 
@@ -192,12 +194,12 @@ enum TREE_STUFF
     STD_FUNC_OUTPUT        = 2,
     STD_FUNC_SIN           = 3,
     STD_FUNC_COS           = 4,
-    STD_FUNC_GETCH         = 6,
-    STD_FUNC_CALL_USER     = 7,
-    STD_FUNC_DIFFERENTIATE = 8,
-    STD_FUNC_SQRT          = 9,
-    STD_FUNC_MAX           = 10,
-    STD_FUNC_MIN           = 11,
+    STD_FUNC_GETCH         = 5,
+    STD_FUNC_CALL_USER     = 6,
+    STD_FUNC_DIFFERENTIATE = 7,
+    STD_FUNC_SQRT          = 8,
+    STD_FUNC_MAX           = 9,
+    STD_FUNC_MIN           = 10,
 
     OP_EQUAL            = 1,
     OP_PLUS             = 2,
@@ -225,9 +227,11 @@ enum TREE_STUFF
     LOGIC_CONDITION     = 4,
     LOGIC_CONDITION_MET = 5,
 
-    PERSONAL_CODE = 12
+    PERSONAL_CODE = 12,
+    BUILD_NUMBER = 1
 
 };
+
 
 
 
