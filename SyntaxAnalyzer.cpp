@@ -258,6 +258,7 @@ void LolcodeLexicalAnalyzer_t::RecursiveAnalyzer (Node_t<NodeContent_t>* current
             }
             else
             {
+                currentSource += 1;
                 treeRoot_[0][relink_[currentSource->data]].
                 PushChild (NodeContent_t (NODE_NUMBER, 0));
                 currentSource += 1;

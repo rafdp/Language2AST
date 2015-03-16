@@ -20,48 +20,48 @@ struct NodeContent_t
         /*switch (flag)
         {
         case NODE_NUMBER:
-            printf ("num");
+            fprintf (*f, "num");
             break;
         case NODE_VARIABLE:
-            printf ("var");
+            fprintf (*f, "var");
             break;
 
         case NODE_ROOT:
-            printf ("root");
+            fprintf (*f, "root");
             return;
 
         case NODE_MAIN:
-            printf ("main");
+            fprintf (*f, "main");
             return;
 
         case NODE_OPERATOR:
-            printf ("op");
+            fprintf (*f, "op");
             break;
 
         case NODE_LOGIC:
-            printf ("logic");
+            fprintf (*f, "logic");
             break;
 
         case NODE_STD_FUNCTION:
-            printf ("std_func");
+            fprintf (*f, "std_func");
             break;
 
         case NODE_USER_FUNCTION:
-            printf ("usr_func");
+            fprintf (*f, "usr_func");
             break;
 
         case NODE_VAR_INIT:
-            printf ("var_init");
+            fprintf (*f, "var_init");
             return;
 
         case NODE_SERVICE:
-            printf ("serv");
+            fprintf (*f, "serv");
             break;
         default:
-            printf ("unk");
+            fprintf (*f, "unk");
             break;
         }
-        printf (" %g", data);*/
+        fprintf (*f, " %g", data - ((flag == NODE_USER_FUNCTION) ? 1 : 0));*/
         fprintf (*f, "%d %g", flag, data - ((flag == NODE_USER_FUNCTION) ? 1 : 0));
     }
 /*
@@ -313,7 +313,7 @@ public:
         elem_.Print (f);
         for (auto& i : children_) {fprintf (*f, " "); i->DumpPrefix (f, false); }
         fprintf (*f, " NULL ]");
-        if (!first) fprintf (*f, " ");
+        //if (!first) fprintf (*f, " ");
         END (DUMP)
     }
 /*
