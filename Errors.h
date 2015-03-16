@@ -50,7 +50,9 @@ enum ERRORS
     E (399, GET_N_CHILDREN),
     E (400, INSERT_AND_SLIDE),
     E (401, ARITHMETIC_PARSER),
-    E (402, UNLINK_CHILD)
+    E (402, UNLINK_CHILD),
+    E (403, CLEAR_LAST_CHILD),
+
 };
 
 #undef E
@@ -115,7 +117,11 @@ enum NODE_CONTENT : uint8_t
     T (44, YOU), \
     T (45, SAY), \
     T (46, SO), \
-    T (47, OPENNG)
+    T (47, OPENNG), \
+    T (48, GETCH), \
+    T (49, COS), \
+    T (50, SIN), \
+    T (51, DER)
 
 
 #define T(num, name) TOKEN_##name = num

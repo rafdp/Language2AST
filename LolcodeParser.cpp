@@ -158,6 +158,7 @@ void LolcodeParser_t::ParseLine (std::string line, uint32_t lineN)
                     *(i + 3) == 'R')
                 {
                     ignoring = false;
+                    i += 4;
                 }
             }
             if (ignoring) return;
@@ -235,6 +236,10 @@ void LolcodeParser_t::ParseTokens ()
 
         do {((void)0, TOKEN_BLOCK); } //! Magic
         while (false);
+        if (currentStr == "RLY?")
+        {
+            currentToken.type = TOKEN_RLY_QM;
+        }
 
         #undef T
 
@@ -266,6 +271,8 @@ void LolcodeParser_t::ParseConstructs ()
     StringTable_t table; // var, funcs, loops
     uint8_t nVars = 0;
 
+    bool foundStart = false;
+
     for (auto currentToken = code_->tokens_.begin ();
          currentToken < code_->tokens_.end ();
          currentToken++)
@@ -282,12 +289,26 @@ void LolcodeParser_t::ParseConstructs ()
                       EM_ERROR);
         }
 
-        if (currentToken == code_->tokens_.begin () && currentToken->type != TOKEN_HAI)
+        if (currentToken->type == TOKEN_KTHXBYE)
+        {
+            code_->tokens_.erase (currentToken, code_->tokens_.end ());
+            return;
+        }
+
+        if (!foundStart &&
+            currentToken == code_->tokens_.begin () &&
+            currentToken->type != TOKEN_HAI)
         {
             AddError (currentToken->line,
                       "Expected token \"HAI\" at the beginning of input"s,
                       currentToken->shift,
                       EM_ERROR);
+        }
+
+        if (!foundStart && currentToken == code_->tokens_.begin () && currentToken->type == TOKEN_HAI)
+        {
+            code_->tokens_.erase (currentToken);
+            foundStart = true;
         }
 
 
@@ -455,6 +476,18 @@ void LolcodeParser_t::ParseConstructs ()
         ENDIF
 
         IF (VISIBLE)
+            ARITHMETIC_CASES
+        ENDIF
+
+        IF (COS)
+            ARITHMETIC_CASES
+        ENDIF
+
+        IF (SIN)
+            ARITHMETIC_CASES
+        ENDIF
+
+        IF (DER)
             ARITHMETIC_CASES
         ENDIF
 

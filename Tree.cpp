@@ -15,39 +15,55 @@ struct NodeContent_t
         data (0)
     {}
 
-/*
     void Print ()
     {
         switch (flag)
         {
-        case FLAG_NUMERIC:
-            //printf ("|num %I64u|", data);
-            if (*(reinterpret_cast<int64_t*> (&data)) < 0)
-                printf ("%lld", data);
-            else
-                printf ("%llu", data);
+        case NODE_NUMBER:
+            printf ("num");
             break;
-        case FLAG_NUMERICD:
-            //printf ("|num %I64u|", data);
-            printf ("%g", *(reinterpret_cast<double*> (&data)));
+        case NODE_VARIABLE:
+            printf ("var");
             break;
-        case FLAG_OPERATOR:
-            //printf ("|op \'%c\'|", static_cast <uint8_t> (data));
-            printf ("%c", static_cast <uint8_t> (data));
+
+        case NODE_ROOT:
+            printf ("root");
+            return;
+
+        case NODE_MAIN:
+            printf ("main");
+            return;
+
+        case NODE_OPERATOR:
+            printf ("op");
             break;
-        case FLAG_FUNCTION:
-            printf ("|func %llu|", data);
+
+        case NODE_LOGIC:
+            printf ("logic");
             break;
-        case FLAG_ARGUMENT:
-            //printf ("|arg %I64u|", data);
-            printf ("x");
+
+        case NODE_STD_FUNCTION:
+            printf ("std_func");
+            break;
+
+        case NODE_USER_FUNCTION:
+            printf ("usr_func");
+            break;
+
+        case NODE_VAR_INIT:
+            printf ("var_init");
+            return;
+
+        case NODE_SERVICE:
+            printf ("serv");
             break;
         default:
-            printf ("|unk %d %llu|", flag, data);
+            printf ("unk");
             break;
         }
+        printf (" %g", data);
     }
-
+/*
     double GetDouble ()
     {
         switch (flag)
@@ -127,8 +143,8 @@ public:
     {
     END (CTOR)
 
-    template <typename T = Element_t>
-    Node_t<Element_t>* PushChild (T elem = T())
+
+    Node_t* PushChild (Element_t elem = Element_t())
     {
         BEGIN
 
@@ -154,6 +170,16 @@ public:
         children_[n] = child;
         if (child) children_[n]->parent_ = this;
         END (SET_CHILD)
+    }
+
+    void ClearLastChild ()
+    {
+        BEGIN
+        if (children_.size () == 0)
+            _EXC_N (NO_LAST_CHILD, "No last child")
+        delete *children_.rbegin();
+        children_.erase (children_.end() - 1);
+        END (CLEAR_LAST_CHILD)
     }
 
 
@@ -240,17 +266,18 @@ public:
         END (SET_ELEM)
     }
 
-    void InsertAndSlide (uint32_t pos, const Element_t& elem)
+    Node_t* InsertAndSlide (uint32_t pos, const Element_t& elem)
     {
         BEGIN
         if (pos > children_.size ())
             _EXC_N (OUT_OF_RANGE, "Trying to access out of range element")
 
-        Node_t<Element_t>* bak = children_[pos]->GetElem ();
+        Node_t<Element_t>* bak = children_[pos];
         children_[pos] = nullptr;
         SetChild (pos, new Node_t (this, elem));
         children_[pos]->PushChild ();
         children_[pos]->SetChild (0, bak);
+        return children_[pos];
         END (INSERT_AND_SLIDE)
     }
 
@@ -277,16 +304,15 @@ public:
         END (CLEAR)
     }
 
-/*
+
     void DumpPrefix ()
     {
-        printf ("(");
+        printf ("[ ");
         elem_.Print();
-        if (leftChild_)  {printf (" "); leftChild_->DumpPrefix ();}
-        if (rightChild_) rightChild_->DumpPrefix ();
-        printf (")");
+        for (auto& i : children_) {printf (" "); i->DumpPrefix (); }
+        printf (" ] ");
     }
-
+/*
     void DumpInfix ()
     {
         if (leftChild_)

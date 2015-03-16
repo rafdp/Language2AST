@@ -67,6 +67,8 @@ bool Compiler_t::Compile ()
 
     if (! ManageErrors ()) return false;
 
+    analyzer_.Dump ();
+
     END (PROCESS)
     return true;
 }
