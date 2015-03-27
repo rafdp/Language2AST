@@ -85,7 +85,6 @@ struct StringTable_t : NZA_t
     {
         data.clear ();
         data = that.data;
-        for (auto i : data) printf ("__ %s\n", i.c_str ());
         return *this;
     }
 
