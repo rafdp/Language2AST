@@ -4,7 +4,7 @@
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 //#pragma GCC diagnostic ignored "-Wunused-value"
 
-#include "Exception.h"
+#include "../Exception.h"
 using namespace std::literals::string_literals;
 exception_data* EXPN = nullptr;
 
@@ -24,8 +24,8 @@ T __zero__ ()
 
 std::string& CreateStringOnFail (const char* text, ...);
 
-#include "Errors.h"
-#include "Support.cpp"
+#include "../Errors.h"
+#include "../Support.cpp"
 #include "Token.cpp"
 #include "LolcodeParser.cpp"
 #include "Tree.cpp"

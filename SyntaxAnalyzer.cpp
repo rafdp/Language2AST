@@ -127,7 +127,6 @@ void LolcodeLexicalAnalyzer_t::ArithmeticParser (Node_t<NodeContent_t>* currentN
         ArithmeticParser (currentNode->GetLastChild (), currentSource); \
         if (currentNode->GetNChildren () != 2) AddError (*old, "Invalid amount ov arguments");
 
-    printf ("--- Got %d\n", currentSource->type);
     auto old = currentSource;
     switch (currentSource->type)
     {
@@ -138,6 +137,12 @@ void LolcodeLexicalAnalyzer_t::ArithmeticParser (Node_t<NodeContent_t>* currentN
         case TOKEN_DIFFRINT:
             currentNode->SetElem (NodeContent_t (NODE_OPERATOR, OP_BOOL_NOT_EQUAL));
             CASE_END
+            break;
+        case TOKEN_SQRT_OF:
+            currentNode->SetElem (NodeContent_t (NODE_STD_FUNCTION, STD_FUNC_SQRT));
+            currentSource++;
+            ArithmeticParser (currentNode->PushChild (), currentSource);
+            if (currentNode->GetNChildren () != 1) AddError (*old, "Invalid amount ov arguments");
             break;
         case TOKEN_SUM_OF:
             currentNode->SetElem (NodeContent_t (NODE_OPERATOR, OP_PLUS));
@@ -242,7 +247,6 @@ void LolcodeLexicalAnalyzer_t::RecursiveAnalyzer (Node_t<NodeContent_t>* current
 
     auto old = currentSource;
 
-    printf ("___ Got %d\n", currentSource->type);
 
     switch (currentSource->type)
     {
@@ -503,6 +507,7 @@ void LolcodeLexicalAnalyzer_t::RecursiveAnalyzer (Node_t<NodeContent_t>* current
         case TOKEN_EITHER_OF:
         case TOKEN_BOTH_OF:
         case TOKEN_WON_OF:
+        case TOKEN_PWR_OF:
         case TOKEN_AN:
         case TOKEN_NOT:
         {
@@ -531,7 +536,7 @@ void LolcodeLexicalAnalyzer_t::RecursiveAnalyzer (Node_t<NodeContent_t>* current
             break;
         }
 
-        case TOKEN_COS:
+        case TOKEN_COS_OF:
         {
             currentNode->SetElem   (NodeContent_t (NODE_STD_FUNCTION, STD_FUNC_COS));
             currentSource++;
@@ -540,7 +545,7 @@ void LolcodeLexicalAnalyzer_t::RecursiveAnalyzer (Node_t<NodeContent_t>* current
             break;
         }
 
-        case TOKEN_SIN:
+        case TOKEN_SIN_OF:
         {
             currentNode->SetElem   (NodeContent_t (NODE_STD_FUNCTION, STD_FUNC_SIN));
             currentSource++;
@@ -557,7 +562,7 @@ void LolcodeLexicalAnalyzer_t::RecursiveAnalyzer (Node_t<NodeContent_t>* current
             break;
         }
 
-        case TOKEN_DER:
+        case TOKEN_DER_OF:
         {
             currentNode->SetElem   (NodeContent_t (NODE_STD_FUNCTION, STD_FUNC_DIFFERENTIATE));
             currentSource++;
@@ -566,7 +571,16 @@ void LolcodeLexicalAnalyzer_t::RecursiveAnalyzer (Node_t<NodeContent_t>* current
             break;
         }
 
-        default: printf ("UNKNOWN %d\n", currentSource->type); break;
+        case TOKEN_SQRT_OF:
+        {
+            currentNode->SetElem   (NodeContent_t (NODE_STD_FUNCTION, STD_FUNC_SQRT));
+            currentSource++;
+            ArithmeticParser (currentNode->PushChild (), currentSource);
+            NEXT_NODE
+            break;
+        }
+
+        default: _EXC_N (UNKNOWN_TOKEN, "Found unknown token"); break;
     }
 
 
@@ -607,28 +621,4 @@ void LolcodeLexicalAnalyzer_t::Dump (std::string filename)
     treeRoot_.DumpPrefix (file);
     END (DUMP)
 }
-
-
-
-
-
-    /**
-
-
-    2. Start building tree
-
-
-
-    The RTB (recursive tree building function) checks the current node with a huge switch over all the possible token types, creating one or more needed subnodes starting from the current node
-    var R PRODUKT var AN 6
-    var -> creating node VAR current on child of VAR
-    R -> creating node = current on 2 child of =
-    PRODUKT -> creating node * current on child of *
-    var -> creating node VAR, current on child of var
-    AN -> deleting child of VAR, returning to parent, adding child, current on added child
-    6 -> adding NUM, current on child of num
-    Need some way to know the cmd has ended
-
-    **/
-
 

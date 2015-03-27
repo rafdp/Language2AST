@@ -346,6 +346,7 @@ void LolcodeParser_t::ParseConstructs ()
             case TOKEN_QUOSHUNT: \
             case TOKEN_BIGGR: \
             case TOKEN_SMALLR: \
+            case TOKEN_SQRT: \
             case TOKEN_VAR: \
             case TOKEN_NUM: \
                 break;
@@ -449,10 +450,15 @@ void LolcodeParser_t::ParseConstructs ()
         MERGE_OF (DIFF)
         MERGE_OF (PRODUKT)
         MERGE_OF (QUOSHUNT)
+        MERGE_OF (PWR)
         MERGE_OF (BIGGR)
         MERGE_OF (SMALLR)
         MERGE_OF (WON)
         MERGE_OF (EITHER)
+        MERGE_OF (SQRT)
+        MERGE_OF (COS)
+        MERGE_OF (SIN)
+        MERGE_OF (DER)
 
         DEPRECATED (A)
 
@@ -481,15 +487,19 @@ void LolcodeParser_t::ParseConstructs ()
             ARITHMETIC_CASES
         ENDIF
 
-        IF (COS)
+        IF (COS_OF)
             ARITHMETIC_CASES
         ENDIF
 
-        IF (SIN)
+        IF (SIN_OF)
             ARITHMETIC_CASES
         ENDIF
 
-        IF (DER)
+        IF (DER_OF)
+            ARITHMETIC_CASES
+        ENDIF
+
+        IF (SQRT_OF)
             ARITHMETIC_CASES
         ENDIF
 
@@ -604,6 +614,10 @@ void LolcodeParser_t::ParseConstructs ()
         ENDIF
 
         IF (QUOSHUNT_OF)
+            ARITHMETIC_CASES
+        ENDIF
+
+        IF (PWR_OF)
             ARITHMETIC_CASES
         ENDIF
 

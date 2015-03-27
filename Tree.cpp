@@ -306,14 +306,13 @@ public:
     }
 
 
-    void DumpPrefix (File_t& f, bool first = true)
+    void DumpPrefix (File_t& f)
     {
         BEGIN
         fprintf (*f, "[ ");
         elem_.Print (f);
-        for (auto& i : children_) {fprintf (*f, " "); i->DumpPrefix (f, false); }
+        for (auto& i : children_) {fprintf (*f, " "); i->DumpPrefix (f); }
         fprintf (*f, " NULL ]");
-        //if (!first) fprintf (*f, " ");
         END (DUMP)
     }
 /*
@@ -364,6 +363,7 @@ public:
 
 };
 
+void CopyTree (Node_t<NodeContent_t>* source, Node_t<NodeContent_t>* destination);
 void CopyTree (Node_t<NodeContent_t>* source, Node_t<NodeContent_t>* destination)
 {
     destination->SetElem (source->GetElem ());
