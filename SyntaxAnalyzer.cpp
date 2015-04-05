@@ -128,6 +128,7 @@ void LolcodeLexicalAnalyzer_t::ArithmeticParser (Node_t<NodeContent_t>* currentN
         if (currentNode->GetNChildren () != 2) AddError (*old, "Invalid amount ov arguments");
 
     auto old = currentSource;
+    //printf ("%d %g\n", currentSource->type, currentSource->data);
     switch (currentSource->type)
     {
         case TOKEN_BOTH_SAEM:
@@ -141,11 +142,17 @@ void LolcodeLexicalAnalyzer_t::ArithmeticParser (Node_t<NodeContent_t>* currentN
         case TOKEN_SQRT_OF:
             currentNode->SetElem (NodeContent_t (NODE_STD_FUNCTION, STD_FUNC_SQRT));
             currentSource++;
+            //printf ("Sqrt, about to rec \n");
             ArithmeticParser (currentNode->PushChild (), currentSource);
+            //ArithmeticParser (currentNode->GetLastChild (), currentSource);
             if (currentNode->GetNChildren () != 1) AddError (*old, "Invalid amount ov arguments");
             break;
         case TOKEN_SUM_OF:
             currentNode->SetElem (NodeContent_t (NODE_OPERATOR, OP_PLUS));
+            CASE_END
+            break;
+        case TOKEN_PWR_OF:
+            currentNode->SetElem (NodeContent_t (NODE_OPERATOR, OP_POWER));
             CASE_END
             break;
         case TOKEN_DIFF_OF:
@@ -202,6 +209,25 @@ void LolcodeLexicalAnalyzer_t::ArithmeticParser (Node_t<NodeContent_t>* currentN
             currentNode->SetElem (NodeContent_t (NODE_OPERATOR, OP_BOOL_NOT));
             currentSource++;
             ArithmeticParser (currentNode->PushChild (), currentSource);
+            break;
+
+        case TOKEN_COS_OF:
+            currentNode->SetElem (NodeContent_t (NODE_STD_FUNCTION, STD_FUNC_COS));
+            currentSource++;
+            ArithmeticParser (currentNode->PushChild (), currentSource);
+            if (currentNode->GetNChildren () != 1) AddError (*old, "Invalid amount ov arguments");
+            break;
+
+        case TOKEN_SIN_OF:
+            currentNode->SetElem (NodeContent_t (NODE_STD_FUNCTION, STD_FUNC_SIN));
+            currentSource++;
+            ArithmeticParser (currentNode->PushChild (), currentSource);
+            if (currentNode->GetNChildren () != 1) AddError (*old, "Invalid amount ov arguments");
+            break;
+
+        case TOKEN_DER_OF:
+            currentNode->SetElem (NodeContent_t (NODE_STD_FUNCTION, STD_FUNC_DIFFERENTIATE));
+            CASE_END
             break;
 
         case TOKEN_VAR:
@@ -510,6 +536,10 @@ void LolcodeLexicalAnalyzer_t::RecursiveAnalyzer (Node_t<NodeContent_t>* current
         case TOKEN_PWR_OF:
         case TOKEN_AN:
         case TOKEN_NOT:
+        case TOKEN_COS_OF:
+        case TOKEN_SIN_OF:
+        case TOKEN_SQRT_OF:
+        case TOKEN_DER_OF:
         {
             auto bak = currentNode->GetParent();
             ArithmeticParser (currentNode, currentSource);
@@ -536,46 +566,11 @@ void LolcodeLexicalAnalyzer_t::RecursiveAnalyzer (Node_t<NodeContent_t>* current
             break;
         }
 
-        case TOKEN_COS_OF:
-        {
-            currentNode->SetElem   (NodeContent_t (NODE_STD_FUNCTION, STD_FUNC_COS));
-            currentSource++;
-            ArithmeticParser (currentNode->PushChild (), currentSource);
-            NEXT_NODE
-            break;
-        }
-
-        case TOKEN_SIN_OF:
-        {
-            currentNode->SetElem   (NodeContent_t (NODE_STD_FUNCTION, STD_FUNC_SIN));
-            currentSource++;
-            ArithmeticParser (currentNode->PushChild (), currentSource);
-            NEXT_NODE
-            break;
-        }
 
         case TOKEN_GETCH:
         {
             currentNode->SetElem   (NodeContent_t (NODE_STD_FUNCTION, STD_FUNC_GETCH));
             currentSource++;
-            NEXT_NODE
-            break;
-        }
-
-        case TOKEN_DER_OF:
-        {
-            currentNode->SetElem   (NodeContent_t (NODE_STD_FUNCTION, STD_FUNC_DIFFERENTIATE));
-            currentSource++;
-            ArithmeticParser (currentNode->PushChild (), currentSource);
-            NEXT_NODE
-            break;
-        }
-
-        case TOKEN_SQRT_OF:
-        {
-            currentNode->SetElem   (NodeContent_t (NODE_STD_FUNCTION, STD_FUNC_SQRT));
-            currentSource++;
-            ArithmeticParser (currentNode->PushChild (), currentSource);
             NEXT_NODE
             break;
         }
@@ -621,4 +616,14 @@ void LolcodeLexicalAnalyzer_t::Dump (std::string filename)
     treeRoot_.DumpPrefix (file);
     END (DUMP)
 }
+
+
+
+
+
+
+
+
+
+
 

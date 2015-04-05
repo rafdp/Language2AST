@@ -8,7 +8,7 @@ class LolcodeParser_t : NZA_t
     void ok ();
     void ParseLine (std::string token, uint32_t lineN);
     bool CheckIterStr (std::string::iterator& i, std::string& line, int lineN);
-    bool CheckNum (std::string s, int64_t* num);
+    bool CheckNum (std::string s, double* num);
     void AddError (uint32_t line,
                    std::string msg,
                    uint32_t shift,
@@ -62,19 +62,14 @@ void LolcodeParser_t::LoadFile (std::string filename)
     END (LOAD_FILE)
 }
 
-bool LolcodeParser_t::CheckNum (std::string str, int64_t* num)
+bool LolcodeParser_t::CheckNum (std::string str, double* num)
 {
-    int64_t numLocal = 0;
-    bool negative = (str[0] == '-');
     for (auto i = str.begin(); i < str.end(); i++)
     {
-        if (negative && i == str.begin()) continue;
-        if (*i > '9' || *i < '0') return false;
-        numLocal *= 10;
-        numLocal += *i - '0';
+        if (*i == '-' && i == str.begin()) continue;
+        if ((*i > '9' || *i < '0') && *i != '.') return false;
     }
-    if (negative) numLocal *= -1;
-    *num = numLocal;
+    *num = atof (str.c_str ());
     return true;
 }
 
@@ -347,6 +342,9 @@ void LolcodeParser_t::ParseConstructs ()
             case TOKEN_BIGGR: \
             case TOKEN_SMALLR: \
             case TOKEN_SQRT: \
+            case TOKEN_COS: \
+            case TOKEN_SIN: \
+            case TOKEN_PWR: \
             case TOKEN_VAR: \
             case TOKEN_NUM: \
                 break;

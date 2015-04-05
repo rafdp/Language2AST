@@ -2,7 +2,7 @@
 struct Token_t : NZA_t
 {
     uint32_t type;
-    int64_t data;
+    double data;
     uint32_t line;
     uint32_t shift;
 
@@ -13,7 +13,7 @@ struct Token_t : NZA_t
         shift ()
     {}
 
-    Token_t (int64_t data_, uint32_t line_, uint32_t shift_) :
+    Token_t (double data_, uint32_t line_, uint32_t shift_) :
         type  (TOKEN_UNTYPED),
         data  (data_),
         line  (line_),
