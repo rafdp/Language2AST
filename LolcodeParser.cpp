@@ -242,7 +242,7 @@ void LolcodeParser_t::ParseTokens ()
             oldToken = currentToken.type;
         else
         {
-            if (oldToken != TOKEN_YR &&
+            /*if (oldToken != TOKEN_YR &&
                 oldToken != TOKEN_I &&
                 oldToken != TOKEN_IZ &&
                 oldToken != TOKEN_A &&
@@ -251,8 +251,9 @@ void LolcodeParser_t::ParseTokens ()
                 oldToken != TOKEN_GIMMEH &&
                 oldToken != TOKEN_VISIBLE &&
                 oldToken != TOKEN_SAEM &&
+                oldToken != TOKEN_SAEM &&
                 oldLine == currentToken.line)
-                AddErrorUnexpectedToken (currentToken);
+                AddErrorUnexpectedToken (currentToken);*/
             oldToken = currentToken.type = TOKEN_VAR;
         }
         oldLine = currentToken.line;
@@ -322,7 +323,7 @@ void LolcodeParser_t::ParseConstructs ()
             return; \
         }
 
-        #define DEFAULT_CASE default: AddErrorUnexpectedToken (*(currentToken + 1)); break;
+        #define DEFAULT_CASE default: printf ("%d\n", currentToken->type); AddErrorUnexpectedToken (*(currentToken + 1)); break;
         #define DROP_NEXT currentToken = code_->tokens_.erase (currentToken + 1); currentToken--;
 
         #define IF(tok) if (currentToken->type == TOKEN_##tok) \
@@ -441,6 +442,11 @@ void LolcodeParser_t::ParseConstructs ()
         DEPRECATED (OF)
 
         IF (AN)
+            case TOKEN_WON:
+            case TOKEN_EITHER:
+            case TOKEN_BOTH:
+            case TOKEN_NOT:
+            case TOKEN_DIFFRINT:
             ARITHMETIC_CASES
         ENDIF
 

@@ -427,13 +427,15 @@ void LolcodeLexicalAnalyzer_t::RecursiveAnalyzer (Node_t<NodeContent_t>* current
 
                 currentNode->PushChild (NodeContent_t (NODE_LOGIC, LOGIC_CONDITION_MET));
                 RecursiveAnalyzer ((*currentNode)[1].PushChild (), currentSource, currentFunction);
-                if (up_nerf == UPPIN)
-                    (*currentNode)[1].PushChild (NodeContent_t (NODE_OPERATOR, OP_PLUS_EQUAL));
-                else
-                    (*currentNode)[1].PushChild (NodeContent_t (NODE_OPERATOR, OP_MINUS_EQUAL));
-
+                (*currentNode)[1].PushChild (NodeContent_t (NODE_OPERATOR, OP_EQUAL));
                 (*currentNode)[1].GetLastChild ()->PushChild (NodeContent_t (NODE_VARIABLE, var));
-                (*currentNode)[1].GetLastChild ()->PushChild (NodeContent_t (NODE_NUMBER, 1));
+                if (up_nerf == UPPIN)
+                    (*currentNode)[1].GetLastChild ()->PushChild (NodeContent_t (NODE_OPERATOR, OP_PLUS));
+                else
+                    (*currentNode)[1].GetLastChild ()->PushChild (NodeContent_t (NODE_OPERATOR, OP_MINUS));
+
+                (*currentNode)[1].GetLastChild ()->GetLastChild ()->PushChild (NodeContent_t (NODE_VARIABLE, var));
+                (*currentNode)[1].GetLastChild ()->GetLastChild ()->PushChild (NodeContent_t (NODE_NUMBER, 1));
 
             }
             else
